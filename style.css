@@ -1,0 +1,26 @@
+.board-row {
+  /* display: block;
+  padding: 0;
+  margin: 0;
+  vertical-align: top;
+  border: 1px solid red; */
+}
+
+.cell {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+  border: 1px solid gray;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.block-i {
+  background-color: red !important;
+  display: inline-block;
+}
+
+.fixed-block {
+  background-color: blue;
+  display: inline-block;
+}
