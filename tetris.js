@@ -1,20 +1,23 @@
 // 디자인 참고
-// https://www.reddit.com/r/Tetris/comments/6o6tvv/what_is_the_block_algorithm_for_classic_tetris/
+// https://www.freetetris.org/game.php
 
 let cellArray;
 let boardElement;
 
-const BOARD_WIDTH = 20;
+const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 40;
 const BLOCK_WIDTH = 20;
 const BLOCK_HEIGHT = 20;
 
 class Block {
-  constructor(blockType) {
-    this.blockType = blockType;
+  constructor() {
+    this.blockClass = '';
+    this.colorType = -1;
     this.currentRoateIndex = 0;
     this.posArray;
     this.currentPosition;
+    this.posX = BOARD_WIDTH / 2;
+    this.posY = 0;
   }
 
   getBlockPosition() {
@@ -31,16 +34,37 @@ class Block {
     }
     return result;
   }
+  rotate() {
+    if (true) {
+      for (let i = 0; i < this.posArray.length; ++i) {
+        for (let j = 0 + i; j < this.posArray.length; ++j) {
+          if (i === j)
+            continue;
+          let temp = this.posArray[i][j];
+          this.posArray[i][j] = this.posArray[j][i];
+          this.posArray[j][i] = temp;
+        }
+      }
+    }
+  }
+  draw() {
+    for (let y = 0; y < this.posArray.length; ++y) {
+      for (let x = 0; x < this.posArray[y].length; ++x) {
+        if (this.posArray[y][x] === 1) {
+          setBlock(boardElement[this.posY + y][this.posX + x], this.color);
+        }
+      }
+    }
+  }
 }
 
 let blockArray = [];
 let fixedBlockArray = [];
 
 class BlockI extends Block {
-  constructor(blockType){
-    super(blockType);
-    this.posX = BOARD_WIDTH / 2;
-    this.posY = 0;
+  constructor(){
+    super();
+    this.color = 'orangered';
     this.posArray = [
         [0, 0, 1, 0],
         [0, 0, 1, 0],
@@ -48,49 +72,96 @@ class BlockI extends Block {
         [0, 0, 1, 0]
       ];
   }
-  tryRotate() {
-    return true;
+}
+
+class BlockT extends Block {
+  constructor(){
+    super();
+    this.color = 'yellow';
+    this.posArray = [
+        [0, 0, 0, 0],
+        [0, 1, 0, 0],
+        [1, 1, 1, 0],
+        [0, 0, 0, 0]
+      ];
   }
-  rotate() {
-    if (true) {
-      let tempArray = []
-      for (let i = 0; i < this.posArray.length; ++i) {
-        tempArray.push([])
-        for (let j = 0; j < this.posArray[i].length / 2; ++j) {
-          tempArray[i].push()
-          let temp = this.posArray[i][j];
-          this.posArray[i][j] = this.posArray[j][i];
-          this.posArray[j][i] = temp;
-        }
-      }
-      this.posArray.reverse();
-    }
-    console.log(this.posArray);
+}
+
+class BlockA extends Block {
+  constructor(){
+    super();
+    this.color = 'skyblue';
+    this.posArray = [
+        [0, 0, 1, 0],
+        [0, 1, 1, 0],
+        [0, 1, 0, 0],
+        [0, 0, 0, 0]
+      ];
   }
-  draw() {
-    for (let y = 0; y < this.posArray.length; ++y) {
-      for (let x = 0; x < this.posArray[y].length; ++x) {
-        if (this.posArray[y][x] === 1) {
-          setBlock(boardElement[this.posY + y][this.posX + x]);
-        }
-      }
-    }
+}
+
+class BlockB extends Block {
+  constructor(){
+    super();
+    this.color = 'green';
+    this.posArray = [
+        [0, 1, 0, 0],
+        [0, 1, 1, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 0]
+      ];
+  }
+}
+
+class BlockL extends Block {
+  constructor(){
+    super();
+    this.color = 'violet';
+    this.posArray = [
+        [0, 1, 0, 0],
+        [0, 1, 0, 0],
+        [0, 1, 1, 0],
+        [0, 0, 0, 0]
+      ];
+  }
+}
+
+class BlockR extends Block {
+  constructor(){
+    super();
+    this.color = 'blue';
+    this.posArray = [
+        [0, 0, 1, 0],
+        [0, 0, 1, 0],
+        [0, 1, 1, 0],
+        [0, 0, 0, 0]
+      ];
+  }
+}
+
+class BlockM extends Block {
+  constructor(){
+    super();
+    this.color = 'darkolivegreen';
+    this.posArray = [
+        [0, 0, 0, 0],
+        [0, 1, 1, 0],
+        [0, 1, 1, 0],
+        [0, 0, 0, 0]
+      ];
   }
 }
 
 function setCell(e) {
-  e.classList.remove('block-i');
-  e.classList.add('cell');
+  e.style.backgroundColor = 'white';
 }
 
-function setBlock(e) {
-  e.classList.remove('fixed-block');
-  e.classList.add('block-i');
+function setBlock(e, color) {
+  e.style.backgroundColor = color;
 }
 
-function setFixedBlock(e) {
-  e.classList.remove('block-i');
-  e.classList.add('fixed-block');
+function setFixedBlock(e, color) {
+  e.style.backgroundColor = color;
 }
 
 function initBoard() {
@@ -132,7 +203,7 @@ function drawBoard() {
   for (let i = 0; i < boardElement.length; ++i) {
     for (let j = 0; j < boardElement[i].length; ++j) {
       if (fixedBlockArray[i][j] !== 0) {
-        setFixedBlock(boardElement[i][j])
+        setFixedBlock(boardElement[i][j], currentBlock.color);
       } else {
         setCell(boardElement[i][j]);
       }
@@ -143,10 +214,11 @@ function drawBoard() {
   currentBlock.draw();
 }
 
-const ARROW_LEFT = 37;
-const ARROW_UP = 38;
-const ARROW_RIGHT = 39;
-const ARROW_DOWN = 40;
+const KEY_SPACE = 32;
+const KEY_ARROW_LEFT = 37;
+const KEY_ARROW_UP = 38;
+const KEY_ARROW_RIGHT = 39;
+const KEY_ARROW_DOWN = 40;
 window.addEventListener('keydown', (e) => {
   keyDown(e.keyCode);
 }, false);
@@ -157,26 +229,27 @@ function keyDown(keyCode) {
 
   // 간다.
   switch (keyCode) {
-    case ARROW_LEFT:
-      if (Math.min(...currentBlock.getBlockPosition().map(x => x[1])) === 0) {
-        return;
-      }
-      currentBlock.posX -= 1;
+    case KEY_ARROW_LEFT:
+      moveLeft();
       break;
-    case ARROW_UP:
+    case KEY_ARROW_UP:
       currentBlock.rotate();
       break;
-    case ARROW_RIGHT:
-      if (Math.max(...currentBlock.getBlockPosition().map(x => x[1])) === BOARD_WIDTH - 1) {
-        return;
-      }
-      currentBlock.posX += 1;
+    case KEY_ARROW_RIGHT:
+      moveRight();
       break;
-    case ARROW_DOWN:
+    case KEY_ARROW_DOWN:
       if (blockDown() === false) {
         makeBlock();
       };
       break;
+    case KEY_SPACE:
+      while (true) {
+        if (blockDown() === false) {
+          makeBlock();
+          break;
+        };
+      }
   }
   drawBoard();
 }
@@ -198,14 +271,33 @@ function run() {
   }, 1000)
 }
 
-function moveLeft() {
+function moveSide(value) {
   let blockPosition = currentBlock.getBlockPosition();
-  /// 작업중
-
-  if (Math.min(...blockPosition.map(x => x[1])) === 0) {
-    return;
+  if (value === -1) {
+    if (Math.min(...blockPosition.map(x => x[1])) === 0) {
+      return;
+    }
+  } else {
+    if (Math.max(...blockPosition.map(x => x[1])) === BOARD_WIDTH -1) {
+      return;
+    }
   }
-  currentBlock.posX -= 1;
+
+  for (let i = 0; i < blockPosition.length; ++i) {
+    if (fixedBlockArray[blockPosition[i][0]][blockPosition[i][1] + value] !== 0) {
+      return;
+    }
+  }
+
+  currentBlock.posX += value;
+}
+
+function moveLeft() {
+  moveSide(-1);
+}
+
+function moveRight() {
+  moveSide(1);
 }
 
 
@@ -219,7 +311,6 @@ function tryBlockDown() {
     if (fixedBlockArray[blockPosition[i][0] + 1][blockPosition[i][1]] !== 0) {
       return false;
     }
-    console.log(blockPosition[i][0])
   }
   return true;
 }
@@ -237,8 +328,32 @@ function blockDown() {
 
 let currentBlock;
 function makeBlock() {
-  let block = new BlockI();
-  blockArray.push(block);
+  const blockType = Math.floor(Math.random() * 7);
+  console.log(blockType)
+  let block;
+  switch (blockType){
+    case 0:
+      block = new BlockI();
+      break;
+    case 1:
+      block = new BlockT();
+      break;
+    case 2:
+      block = new BlockA();
+      break;
+    case 3:
+      block = new BlockB();
+      break;
+    case 4:
+      block = new BlockL();
+      break;
+    case 5:
+      block = new BlockR();
+      break;
+    case 6:
+      block = new BlockM();
+      break;
+  }
   currentBlock = block;
 }
 
@@ -248,14 +363,10 @@ function addFixedBlock(block) {
 
   const blockPosition = block.getBlockPosition();
   if (blockPosition) {
-    console.log(blockPosition)
     for (let i = 0; i < blockPosition.length; ++i) {
-      console.log(blockPosition[i][0], blockPosition[i][1]);
-      fixedBlockArray[blockPosition[i][0]][blockPosition[i][1]] = 1;
+      fixedBlockArray[blockPosition[i][0]][blockPosition[i][1]] = block.colorType;
     }
   }
-
-
 }
 
 function initFixedBoard() {
