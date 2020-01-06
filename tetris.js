@@ -5,7 +5,7 @@ let cellArray;
 let boardElement;
 
 const BOARD_WIDTH = 10;
-const BOARD_HEIGHT = 40;
+const BOARD_HEIGHT = 20;
 const BLOCK_WIDTH = 20;
 const BLOCK_HEIGHT = 20;
 
@@ -16,7 +16,7 @@ class Block {
     this.currentRoateIndex = 0;
     this.posArray;
     this.currentPosition;
-    this.posX = BOARD_WIDTH / 2;
+    this.posX = BOARD_WIDTH / 2 - 2;
     this.posY = 0;
   }
 
@@ -45,6 +45,7 @@ class Block {
           this.posArray[j][i] = temp;
         }
       }
+      this.posArray.reverse();
     }
   }
   draw() {
@@ -77,7 +78,7 @@ class BlockI extends Block {
 class BlockT extends Block {
   constructor(){
     super();
-    this.color = 'yellow';
+    this.color = 'lightgray';
     this.posArray = [
         [0, 0, 0, 0],
         [0, 1, 0, 0],
@@ -240,12 +241,14 @@ function keyDown(keyCode) {
       break;
     case KEY_ARROW_DOWN:
       if (blockDown() === false) {
+        tryClearBlockLine(currentBlock.getBlockPosition().map(x => x[0]));
         makeBlock();
       };
       break;
     case KEY_SPACE:
       while (true) {
         if (blockDown() === false) {
+          tryClearBlockLine(currentBlock.getBlockPosition().map(x => x[0]));
           makeBlock();
           break;
         };
@@ -326,10 +329,15 @@ function blockDown() {
   }
 }
 
+// 회전 코드 수정 (좌우 막힌거, 블록막힌거)
+// 스코어 추가
+// 게임 종료
+// 블럭 색상 수정
+
+
 let currentBlock;
 function makeBlock() {
   const blockType = Math.floor(Math.random() * 7);
-  console.log(blockType)
   let block;
   switch (blockType){
     case 0:
@@ -380,6 +388,22 @@ function initFixedBoard() {
   fixedBlockArray[10][10] = 1;
 }
 
+function tryClearBlockLine(yArray) {
+  yArray = [...new Set(yArray)]
+  const result = yArray.filter(x => fixedBlockArray[x].every(e => e !== 0));
+
+  result.forEach(y => {
+    for (let i = 0; i < fixedBlockArray[y].length; ++i) {
+      fixedBlockArray[y][i] = 0;
+    }
+    // i-1부터 0까지 반복하면서 아래로 넣는다.
+    for (let i = y; i > 0; --i) {
+      for (let j = 0; j < fixedBlockArray[i].length; ++j) {
+        fixedBlockArray[i][j] = fixedBlockArray[i - 1][j]
+      }
+    }
+  });
+}
 
 function init() {
   initBoard();
