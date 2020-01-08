@@ -18,6 +18,7 @@ class Block {
     this.currentPosition;
     this.posX = BOARD_WIDTH / 2 - 2;
     this.posY = 0;
+    this.shapeSize = 4;
   }
 
   getBlockPosition() {
@@ -35,17 +36,49 @@ class Block {
     return result;
   }
   rotate() {
-    if (true) {
-      for (let i = 0; i < this.posArray.length; ++i) {
-        for (let j = 0 + i; j < this.posArray.length; ++j) {
-          if (i === j)
-            continue;
-          let temp = this.posArray[i][j];
-          this.posArray[i][j] = this.posArray[j][i];
-          this.posArray[j][i] = temp;
-        }
+    // deepcopy
+    let old = [];
+    this.posArray.forEach((x, i) => {
+      old.push([]);
+      x.forEach(y => {
+        old[i].push(y)
+      })
+    })
+
+    for (let i = 0; i < this.shapeSize; ++i) {
+      for (let j = 0 + i; j < this.shapeSize; ++j) {
+        if (i === j)
+          continue;
+        let temp = this.posArray[i][j];
+        this.posArray[i][j] = this.posArray[j][i];
+        this.posArray[j][i] = temp;
       }
-      this.posArray.reverse();
+    }
+
+    // reverse
+    for (let i = 0; i < this.shapeSize / 2; ++i) {
+      let temp =  this.posArray[i];
+      this.posArray[i] = this.posArray[this.shapeSize - i - 1];
+      this.posArray[this.shapeSize - i - 1] = temp;
+    }
+
+    // 충돌 체크
+    const blockPosition = this.getBlockPosition();
+    if (blockPosition.some(x => {
+      // y 좌표
+      if (x[0] >= BOARD_HEIGHT) {
+        return true;
+      }
+      if (x[1] < 0 || x[1] >= BOARD_WIDTH) {
+        return true;
+      }
+
+      if (fixedBlockArray[x[0]][x[1]] !== '') {
+        return true;
+      }
+      return false;
+    })) {
+      this.posArray = old;
     }
   }
   draw() {
@@ -66,6 +99,7 @@ class BlockI extends Block {
   constructor(){
     super();
     this.color = 'orangered';
+    this.shapeSize = 4;
     this.posArray = [
         [0, 0, 1, 0],
         [0, 0, 1, 0],
@@ -79,10 +113,11 @@ class BlockT extends Block {
   constructor(){
     super();
     this.color = 'lightgray';
+    this.shapeSize = 3;
     this.posArray = [
-        [0, 0, 0, 0],
         [0, 1, 0, 0],
         [1, 1, 1, 0],
+        [0, 0, 0, 0],
         [0, 0, 0, 0]
       ];
   }
@@ -92,10 +127,11 @@ class BlockA extends Block {
   constructor(){
     super();
     this.color = 'skyblue';
+    this.shapeSize = 3;
     this.posArray = [
-        [0, 0, 1, 0],
-        [0, 1, 1, 0],
         [0, 1, 0, 0],
+        [1, 1, 0, 0],
+        [1, 0, 0, 0],
         [0, 0, 0, 0]
       ];
   }
@@ -105,10 +141,11 @@ class BlockB extends Block {
   constructor(){
     super();
     this.color = 'green';
+    this.shapeSize = 3;
     this.posArray = [
+        [1, 0, 0, 0],
+        [1, 1, 0, 0],
         [0, 1, 0, 0],
-        [0, 1, 1, 0],
-        [0, 0, 1, 0],
         [0, 0, 0, 0]
       ];
   }
@@ -118,10 +155,11 @@ class BlockL extends Block {
   constructor(){
     super();
     this.color = 'violet';
+    this.shapeSize = 3;
     this.posArray = [
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 1, 1, 0],
+        [1, 0, 0, 0],
+        [1, 0, 0, 0],
+        [1, 1, 0, 0],
         [0, 0, 0, 0]
       ];
   }
@@ -131,10 +169,11 @@ class BlockR extends Block {
   constructor(){
     super();
     this.color = 'blue';
+    this.shapeSize = 3;
     this.posArray = [
-        [0, 0, 1, 0],
-        [0, 0, 1, 0],
-        [0, 1, 1, 0],
+        [0, 1, 0, 0],
+        [0, 1, 0, 0],
+        [1, 1, 0, 0],
         [0, 0, 0, 0]
       ];
   }
@@ -144,10 +183,11 @@ class BlockM extends Block {
   constructor(){
     super();
     this.color = 'darkolivegreen';
+    this.shapeSize = 2;
     this.posArray = [
+        [1, 1, 0, 0],
+        [1, 1, 0, 0],
         [0, 0, 0, 0],
-        [0, 1, 1, 0],
-        [0, 1, 1, 0],
         [0, 0, 0, 0]
       ];
   }
@@ -200,17 +240,15 @@ function getBlockWidth(block) {
 
 function drawBoard() {
   // board
-  // 다시 그리지 말자 (성능 최악)
   for (let i = 0; i < boardElement.length; ++i) {
     for (let j = 0; j < boardElement[i].length; ++j) {
-      if (fixedBlockArray[i][j] !== 0) {
-        setFixedBlock(boardElement[i][j], currentBlock.color);
+      if (fixedBlockArray[i][j] !== '') {
+        setFixedBlock(boardElement[i][j], fixedBlockArray[i][j]);
       } else {
         setCell(boardElement[i][j]);
       }
     }
   }
-
   // currentBlock
   currentBlock.draw();
 }
@@ -257,12 +295,6 @@ function keyDown(keyCode) {
   drawBoard();
 }
 
-function rotateBlock() {
-  // 일자 블럭인 경우
-
-}
-
-
 let timer;
 function run() {
   timer = setInterval(() => {
@@ -287,7 +319,7 @@ function moveSide(value) {
   }
 
   for (let i = 0; i < blockPosition.length; ++i) {
-    if (fixedBlockArray[blockPosition[i][0]][blockPosition[i][1] + value] !== 0) {
+    if (fixedBlockArray[blockPosition[i][0]][blockPosition[i][1] + value] !== '') {
       return;
     }
   }
@@ -311,7 +343,7 @@ function tryBlockDown() {
     if (blockPosition[i][0] === BOARD_HEIGHT - 1) {
       return false;
     }
-    if (fixedBlockArray[blockPosition[i][0] + 1][blockPosition[i][1]] !== 0) {
+    if (fixedBlockArray[blockPosition[i][0] + 1][blockPosition[i][1]] !== '') {
       return false;
     }
   }
@@ -372,7 +404,7 @@ function addFixedBlock(block) {
   const blockPosition = block.getBlockPosition();
   if (blockPosition) {
     for (let i = 0; i < blockPosition.length; ++i) {
-      fixedBlockArray[blockPosition[i][0]][blockPosition[i][1]] = block.colorType;
+      fixedBlockArray[blockPosition[i][0]][blockPosition[i][1]] = block.color;
     }
   }
 }
@@ -381,16 +413,14 @@ function initFixedBoard() {
   for (let i = 0; i < BOARD_HEIGHT; ++i) {
     fixedBlockArray.push([]);
     for (let j = 0; j < BOARD_WIDTH; ++j) {
-      fixedBlockArray[i].push(0);
+      fixedBlockArray[i].push('');
     }
   }
-
-  fixedBlockArray[10][10] = 1;
 }
 
 function tryClearBlockLine(yArray) {
   yArray = [...new Set(yArray)]
-  const result = yArray.filter(x => fixedBlockArray[x].every(e => e !== 0));
+  const result = yArray.filter(x => fixedBlockArray[x].every(e => e !== ''));
 
   result.forEach(y => {
     for (let i = 0; i < fixedBlockArray[y].length; ++i) {
